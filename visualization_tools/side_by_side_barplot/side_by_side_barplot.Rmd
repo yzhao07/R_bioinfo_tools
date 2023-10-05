@@ -1,0 +1,65 @@
+---
+title: "Compare sample distance"
+author: "Yujie Zhao"
+date: "2023-09-14"
+output: html_document
+---
+# libraries
+```{r}
+rm(list=ls())
+# Loading
+library(ggplot2)
+library(grid)
+
+```
+
+# type 1 barplot using facet_grid
+```{r}
+
+my_data <-readRDS(file = "my_data.rds")
+a= ggplot(my_data, aes(x=X, y=Y, fill=condition)) +
+  geom_bar(stat="identity", position="dodge") +
+  facet_grid(~ group, scale="free", space="free_x")+theme_bw()+xlab("")+ylab("Y")+
+theme(#panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+      axis.text=element_text(size=8,colour="black"),text=element_text(size=8,colour="black"),
+      plot.title =element_text(size=8,colour="black",hjust = 0.5),
+      axis.title = element_text(size=8,colour="black"),panel.spacing = unit(0, "lines"))
+
+
+      
+ggsave(a,file="graph1.png", width=9, height=3)
+
+```
+
+
+# type 2 barplot using facet_wrap
+```{r}
+my_data2 <-readRDS(file = "my_data2.rds")
+a = ggplot(my_data2, aes(x =group, y =value ,fill=group))+
+  geom_boxplot(width=0.4) +# geom_point()+
+  scale_fill_manual(values=c("within_patient"="#ADDB88","across_patient" ="#369F2D"))+ scale_colour_manual(values=c("within_patient"="#ADDB88","across_patient" ="#369F2D"))+ 
+  stat_compare_means(comparisons =list(c("within_patient","across_patient" )),method = 'wilcox.test',size=4)+
+  coord_cartesian(ylim = c(min(my_data2$value)*1,max(my_data2$value)*1.1))+
+  theme_bw()+xlab("")+ylab("Distance")+facet_wrap(vars(response))+
+theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+      axis.text=element_text(size=12,colour="black"),text=element_text(size=12,colour="black"),
+      plot.title =element_text(size=12,colour="black",hjust = 0.5),
+      axis.title = element_text(size=12,colour="black",),axis.text.x = element_blank(),axis.ticks.x = element_blank())
+
+g <- ggplot_gtable(ggplot_build(a))
+strips <- which(grepl('strip-', g$layout$name))
+#"#A94643","#3E4A7B",
+pal= c(rep("#A94643",1),rep("#3E4A7B",1))
+
+for (i in seq_along(strips)) {
+  k <- which(grepl('rect', g$grobs[[strips[i]]]$grobs[[1]]$childrenOrder))
+  l <- which(grepl('titleGrob', g$grobs[[strips[i]]]$grobs[[1]]$childrenOrder))
+  g$grobs[[strips[i]]]$grobs[[1]]$children[[k]]$gp$fill <- pal[i]
+  g$grobs[[strips[i]]]$grobs[[1]]$children[[l]]$children[[1]]$gp$col <- "white"}
+
+ggsave(g,file="graph2.png", width=5, height=3)
+
+```
+

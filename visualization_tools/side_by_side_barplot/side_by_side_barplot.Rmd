@@ -18,7 +18,9 @@ library(grid)
 
 my_data <-readRDS(file = "my_data.rds")
 a= ggplot(my_data, aes(x=X, y=Y, fill=condition)) +
+  # per x per bar
   geom_bar(stat="identity", position="dodge") +
+  # group by group
   facet_grid(~ group, scale="free", space="free_x")+theme_bw()+xlab("")+ylab("Y")+
 theme(#panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -39,9 +41,12 @@ my_data2 <-readRDS(file = "my_data2.rds")
 a = ggplot(my_data2, aes(x =group, y =value ,fill=group))+
   geom_boxplot(width=0.4) +# geom_point()+
   scale_fill_manual(values=c("within_patient"="#ADDB88","across_patient" ="#369F2D"))+ scale_colour_manual(values=c("within_patient"="#ADDB88","across_patient" ="#369F2D"))+ 
+  # statistical analysis
   stat_compare_means(comparisons =list(c("within_patient","across_patient" )),method = 'wilcox.test',size=4)+
   coord_cartesian(ylim = c(min(my_data2$value)*1,max(my_data2$value)*1.1))+
-  theme_bw()+xlab("")+ylab("Distance")+facet_wrap(vars(response))+
+  theme_bw()+xlab("")+ylab("Distance")+
+  # group by response
+  facet_wrap(vars(response))+
 theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
       axis.text=element_text(size=12,colour="black"),text=element_text(size=12,colour="black"),
@@ -50,7 +55,8 @@ theme(panel.grid.major = element_blank(),
 
 g <- ggplot_gtable(ggplot_build(a))
 strips <- which(grepl('strip-', g$layout$name))
-#"#A94643","#3E4A7B",
+
+# set color for each group
 pal= c(rep("#A94643",1),rep("#3E4A7B",1))
 
 for (i in seq_along(strips)) {

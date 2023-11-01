@@ -1,0 +1,35 @@
+---
+title: "Alpha_diversity"
+author: "Yujie Zhao"
+date: "2023-11-01"
+output: html_document
+---
+
+code tutorial: https://joey711.github.io/phyloseq/plot_richness-examples.html
+```{r}
+rm(list=ls())
+library(phyloseq)
+library(ggplot2)
+data("GlobalPatterns")
+
+GP <- prune_species(speciesSums(GlobalPatterns) > 0, GlobalPatterns)
+
+```
+Chao1: measure the community richness
+Chao-1 estimator, calculated as N + S2 / (2 D) where N is the number of OTUs, S is the number of singleton OTUs and D is the number of doublet OTUs, i.e. OTUs with abundance 2.
+
+Shannon Diversity: measure both richness and evenness
+-sum(the relative abundance of each species * log(the relative abundance of each species))
+
+InvSimpson: https://ib.bioninja.com.au/options/option-c-ecology-and-conser/c4-conservation-of-biodiver/biodiversity.html
+measure both richness and evenness
+N: total number of OTU in each sample
+n: number of each OTU
+formula: N(N-1)/sum(n(n-1))
+
+```{r}
+p1 = plot_richness(GP, measures=c("Observed", "Chao1", "Shannon", "InvSimpson"))
+result = p1$data
+
+```
+

@@ -1,0 +1,66 @@
+---
+title: "Linear mixed effect model"
+author: "Yujie Zhao"
+date: "2023-11-01"
+output: html_document
+---
+
+tutorial : https://bookdown.org/steve_midway/DAR/random-effects.html
+youtube: https://www.youtube.com/watch?v=u1ePV1ntMNs
+https://github.com/brandonyph/Basics-Linear-Mixed-Model
+
+# load data
+```{r}
+rm(list=ls())
+library(lme4)
+politeness<- read.csv("http://www.bodowinter.com/tutorial/politeness_data.csv")
+politeness <- politeness[complete.cases(politeness),]
+
+politeness$outcome = politeness$frequency + 10
+```
+
+
+# Compare which factor is important (attitude or gender)
+
+Variables can be numeric.
+outcome: outcome
+fixed variable: attitude, gender
+random effect: (1|subject), (1|scenario)
+
+```{r}
+politeness_att = lmer(outcome ~ attitude + (1|subject)+(1|scenario), data=politeness)
+politeness_att
+
+
+politeness_model = lmer(outcome ~ attitude+gender + (1|subject)+(1|scenario), data=politeness)
+politeness_model
+
+anova(politeness_att,politeness_model) # this show gender is an important factor
+
+```
+# See coefficient of attitude and gender
+```{r}
+coef(politeness_model) # all coefficient is the same
+```
+# random slope for attitude
+```{r}
+#induce random slope
+politeness_model = lmer( frequency ~ attitude + gender + 
+                            (1 + attitude | subject) +
+                            (1 + attitude | scenario),
+                            data = politeness,
+                            REML = FALSE)
+coef(politeness_model)
+```
+# which factor is important
+```{r}
+politeness.null = lmer( outcome ~ gender + 
+                            (1 + attitude | subject) +
+                            (1 + attitude | scenario),
+                            data = politeness,
+                            REML = FALSE)
+anova(politeness.null,politeness_model) # attitude is an important factor 
+
+```
+
+

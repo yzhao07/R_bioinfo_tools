@@ -1,0 +1,38 @@
+---
+title: "Linear_regression"
+author: "Yujie Zhao"
+date: "2023-11-01"
+output: html_document
+---
+
+# load data
+```{r}
+rm(list=ls())
+data("iris")
+iris
+```
+outcome: Sepal.Length
+variable: petal.Length,species
+
+```{r}
+iris.model = lm(Sepal.Length ~ Petal.Length+Petal.Width,data=iris)
+summary(iris.model)
+
+```
+Explanation:
+for petal.length: p = 9.41e-13 showing there is a significant difference when using both petal.length and petal.width as predictive variables, showing petal.length is a important factor
+
+for petal.Width: p = 0.0483 showing there is a significant difference when using both petal.length and petal.width as predictive variables, showing petal.Width is a important factor
+
+# Use anova
+If predictive variable has multiple groups, it will be comparisons between 2
+```{r}
+iris.model = lm(Sepal.Length ~ Petal.Length+Species,data=iris)
+summary(iris.model)
+```
+So we can use anova
+```{r}
+anova(iris.model)
+```
+
+

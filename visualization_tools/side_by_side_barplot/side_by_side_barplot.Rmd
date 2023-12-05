@@ -10,7 +10,8 @@ rm(list=ls())
 # Loading
 library(ggplot2)
 library(grid)
-
+library(ggpubr)
+library(ggh4x)
 ```
 
 # type 1 barplot using facet_grid
@@ -67,5 +68,22 @@ for (i in seq_along(strips)) {
 
 ggsave(g,file="graph2.png", width=5, height=3)
 
+```
+
+
+# type 3 barplot using 2 group variables
+```{r}
+
+a = ggplot(my_data2, aes(x =group, y =value ,fill=group))+
+  geom_boxplot(width=0.4) +# geom_point()+
+  scale_fill_manual(values=c("within_patient"="#ADDB88","across_patient" ="#369F2D"))+ scale_colour_manual(values=c("within_patient"="#ADDB88","across_patient" ="#369F2D"))+ 
+  theme_bw()+xlab("")+ylab("Distance")+facet_nested(~ group+response,space = "free_x",scales = "free_x",
+                                     resect = unit(5, "mm"), nest_line = element_line(linetype = 2)) + theme(
+    panel.spacing = unit(0,'lines'),strip.background = element_blank())
+
+# seperate column of outer facet
+gt = ggplot_gtable(ggplot_build(a))
+gt$widths[11] =unit(0.4,'lines')
+ggsave(gt,file="./type3_nested_facet.pdf", width=8, height=5)
 ```
 

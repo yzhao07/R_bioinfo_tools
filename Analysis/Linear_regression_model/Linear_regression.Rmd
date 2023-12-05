@@ -15,9 +15,9 @@ outcome: Sepal.Length
 variable: petal.Length,species
 
 ```{r}
-iris.model = lm(Sepal.Length ~ Petal.Length+Petal.Width,data=iris)
+iris.model = glm(Sepal.Length ~ Petal.Width+Petal.Length+Petal.Width:Petal.Length,data=iris)
 summary(iris.model)
-
+anova(iris.model,test="F")
 ```
 Explanation:
 for petal.length: p = 9.41e-13 showing there is a significant difference when using both petal.length and petal.width as predictive variables, showing petal.length is a important factor

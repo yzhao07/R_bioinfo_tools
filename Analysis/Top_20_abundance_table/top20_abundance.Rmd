@@ -1,0 +1,92 @@
+---
+title: "A.Baseline"
+author: "Yujie Zhao"
+date: "2023-12-02"
+output: html_document
+---
+```{r}
+library(ggplot2)
+library(microbiome)
+library(randomcoloR)
+library(ggh4x)
+library(reshape2)
+data(atlas1006) 
+genus = atlas1006@otu_table@.Data
+# normalize so that each sample has a total of 100
+genus = as.data.frame(sweep(genus,2,colSums(genus),`/`)*100)
+group = atlas1006@sam_data
+
+# bmi group as the group variable
+group$group = group$bmi_group
+group=group[!is.na(group$group),]
+genus = genus[,group$sample]
+rownames(group) = group$sample
+genus = as.data.frame(t(genus))
+```
+
+```{r}
+get_top20 <- function(genus,group,gname){
+  tmp_group = group[group$group == gname,]
+  tmp_genus = genus[rownames(tmp_group),]
+  numTx     = 19
+  A = cbind(group=tmp_group$group,tmp_genus)
+  cmaggA          = colMeans(A[,2:ncol(A)])
+  selectedA       = names(cmaggA[order(cmaggA, decreasing=TRUE)])[1:19]
+  aggA            = A[,c( "group", selectedA)]
+  aggA$Other.taxa = 100-rowSums(aggA[2:ncol(aggA)])
+  aggA$sample = rownames(aggA)
+  meltA           = melt(aggA, id.vars = c( "group","sample"))
+  colnames(meltA) = c("group","sample","Taxa", "Abundance")
+  return(meltA)
+}
+
+```
+
+# plot stacked barplot
+```{r}
+obese = get_top20(genus,group,"obese")
+lean = get_top20(genus,group,"lean")
+severeobese = get_top20(genus,group,"severeobese")
+
+# plot
+top20genus = unique(c(obese$Taxa,lean$Taxa,severeobese$Taxa))
+
+set.seed(5)
+palette <- distinctColorPalette(length(top20genus)-20)
+GroupCols = c("#eb3eab", "#FF9AA2", "#FFDAC1", "#E2F0CB", "#B5EAD7", "#C7CEEA", "#8e7cc3", "#f94144","#f8961e","#f9b14a","#f9c74f","#90be6d","#82d3d1","#4d908e","#6ec2e5","#277da1","#8DD3C7", "#FFFFB3", "#BEBADA","#e4e4e4",palette)
+names(GroupCols) = top20genus
+
+plotdata = as.data.frame(rbind(obese,lean,severeobese))
+plotdata$group = factor(plotdata$group,levels = c("lean","obese","severeobese"))
+
+p1 <- ggplot(plotdata, aes(x=sample, y=Abundance, fill=Taxa)) +
+  geom_bar(position="stack", stat="identity", colour="white", size=0.25) +
+  theme_bw() +
+  scale_fill_manual(values=GroupCols) +
+  theme(axis.text.x = element_text(size=8,angle=90, hjust=0.5, vjust=0.5,colour="black"),
+        axis.text = element_text(size=14, colour="black"),
+        axis.title.y =element_text(size=14),
+        panel.grid.major = element_blank(),plot.title = element_text(size=14,hjust = 0.5,vjust=0),
+        panel.grid.minor = element_blank(),
+       # legend.position = "none",
+        strip.text.x = element_text(size = 8, angle = 0)) +
+  xlab(" ") +
+  ylab("% Abundance") +facet_grid(~group, space="free_x", scale="free_x") 
+
+ggsave(p1,file="./top_20.pdf",width = 20,height = 10)
+
+```
+
+# venn diagram
+```{r}
+library(VennDiagram)
+venn.diagram(
+  x = list(obese$Taxa,lean$Taxa,severeobese$Taxa),
+  category.names = c("obese" , "lean" , "severeobese"),
+  filename = '#venn_diagramm.png',
+  output=TRUE,
+  fill = c("blue","green","red")
+)
+
+```
+
